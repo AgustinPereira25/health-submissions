@@ -238,12 +238,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   //1. get submission info
   const response = await submissionApi.get<ISubmission>(`/submissions/${id}`, { headers: { 'Content-Type': 'application/json' } });
   const submissionInfo:ISubmission = response.data;
-  console.log({ submissionInfo })
+  // console.log({ submissionInfo })
   
   //2. get patient info (we only need name, email, address, phone.. for now).
   const response2 = await submissionApi.get<IPatient>(`/patients/${submissionInfo.patientId}`, { headers: { 'Content-Type': 'application/json' } });
   const patient:IPatient = response2.data;
-console.log({patient})
+// console.log({patient})
   return {
     props: {
       submission: JSON.parse(JSON.stringify(submissionInfo)),

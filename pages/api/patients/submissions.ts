@@ -25,7 +25,7 @@ export const getPatientSubmissions = async(req: NextApiRequest, res: NextApiResp
     // console.log({ patientIdQry });
     const arrSqlUser:(string | number | undefined)[] = [patientIdQry];
     const result:any = await executeQuery({
-        query: 'SELECT s.*, u.name as doctorName FROM submissions s INNER JOIN users u ON s.doctorId = u.id and s.patientId = ?;',
+        query: 'SELECT s.*, u.name as doctorName FROM submissions s LEFT JOIN users u ON s.doctorId = u.id WHERE s.patientId = ?;',
         values: arrSqlUser,
     });
     // console.log({ result })

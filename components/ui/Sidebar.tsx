@@ -16,7 +16,7 @@ export const Sidebar = () => {
   return (
     // si no se agrega shrink-0 se achica la navbar..
     // <div className='shrink-0 relative px-3 py-4 w-[calc(100vh-380px)] bg-gray-800 h-screen'>
-    <div className='shrink-0 relative px-3 py-4 w-[calc(100vh-380px)] bg-gray-800'>
+    <div className='shrink-0 relative px-3 py-4 w-[calc(100vh-330px)] bg-gray-800'>
         {
           user?.role === 'doctor' 
           ?

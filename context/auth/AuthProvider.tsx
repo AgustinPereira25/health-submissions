@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
 
       const registerUser = async( name:string, email:string, password: string, role:string): Promise<{hasError: boolean; message?:string}> => {
         try {
-            const { data } = await submissionApi.post('/user/register', { name, email, password, role });
+            const { data } = await submissionApi.post('/users/register', { name, email, password, role });
             const { user } = data;
             //Opcional, token firmarlo en register API
             // const { token, user } = data;

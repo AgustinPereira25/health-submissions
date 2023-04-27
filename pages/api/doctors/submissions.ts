@@ -22,7 +22,7 @@ export const getDoctorSubmissions = async(req: NextApiRequest, res: NextApiRespo
     const { doctorId, status } = req.body;
     // console.log( { doctorId } );
     const doctorIdQry:number = Number(doctorId);
-    console.log({ doctorIdQry, status });
+    // console.log({ doctorIdQry, status });
     let arrSqlUser:(string | number | undefined)[] = [];
     if (status !== '')
     {

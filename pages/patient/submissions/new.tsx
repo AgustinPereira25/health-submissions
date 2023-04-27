@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
 import { NextPage } from 'next';
+import { useRouter } from 'next/router';
 import { Layout } from '@/components/Layouts';
 import { useForm } from 'react-hook-form';
 import { AuthContext } from '@/context/auth';
@@ -8,7 +9,6 @@ import { TextField } from '@mui/material';
 
 
 type FormData = {
-  id: number,
   title: string,
   patientId:number, //para la grid de los doctores
   doctorId?:number, //para la grid de los pacientes
@@ -21,7 +21,7 @@ type FormData = {
 
 export const PatientNewSubmissionPage:NextPage = () => {
   const { user } = useContext(AuthContext);
-  
+  const router = useRouter();
   var date = new Date(); //Get current date
 
   // Get year, month, and day part from the date
@@ -37,7 +37,6 @@ export const PatientNewSubmissionPage:NextPage = () => {
   
   const { register, handleSubmit, formState:{ errors }, getValues, setValue, watch } = useForm<FormData>({
     defaultValues: {
-      id: 0,
       title: '',
       patientId:user?.id,
       doctorId:0,
@@ -55,23 +54,18 @@ export const PatientNewSubmissionPage:NextPage = () => {
     setIsSaving(true); //Evitar el doble posteo
 
     try {
-        // const { data } = await submissionApi({
-        //     url: '/patient/submissions',
-        //     method: 'POST',
-        //     data: form
-        // });
+        const { data } = await submissionApi({
+            url: '/submissions',
+            method: 'POST',
+            data: form
+        });
 
         // console.log({ data });
 
-        // if ( !form._id ) {
-        //     router.replace(`/admin/products/${ form.slug }`);
-        // } else {
-            setIsSaving(false);
-        // }
-
+        router.replace(`/patient/submissions/${ data }`);
 
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         // setIsSaving(false);
     }
   }
@@ -127,9 +121,7 @@ export const PatientNewSubmissionPage:NextPage = () => {
               </div>
               <div className='pt-5'>
                   <button 
-                      className="text-sm font-medium text-white rounded-lg px-3 py-2 bg-blue-600 tracking-wide"
-                      
-                      // onClick={ () =>  }
+                      className="text-sm font-medium text-white rounded-lg px-3 py-2 bg-blue-600 hover:bg-blue-500 tracking-wide"
                   >
                       Send submission
                   </button>
@@ -141,26 +133,5 @@ export const PatientNewSubmissionPage:NextPage = () => {
     </Layout>
   )
 }
-
-
-// Para hacer en un futuro si hay una BD
-// export const getServerSideProps: GetServerSideProps = async (ctx) => {
-//   const { id } = ctx.params as {id: string};
-//   // console.log(id)
-
-//   // console.log(submissions[1])
-
-
-//   var submissionInfoArray:ISubmission[] = submissions.filter((s) => s.id === parseInt(id));
-
-//   // console.log(submissionInfoArray)
-//   const submissionInfo:ISubmission = submissionInfoArray[0];
-
-//   return {
-//     props: {
-//       submission: submissionInfo
-//     }
-//   }
-// }
 
 export default PatientNewSubmissionPage;

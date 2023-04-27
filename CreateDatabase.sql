@@ -1,3 +1,4 @@
+DROP DATABASE submissionsdb;
 CREATE DATABASE IF NOT EXISTS submissionsDB;
 USE submissionsDB;
 
@@ -11,7 +12,7 @@ CREATE TABLE `users` (
 );
 
 CREATE TABLE `patients` (
-  `patientid` integer AUTO_INCREMENT PRIMARY KEY,
+  `patientid` integer PRIMARY KEY,
   `phone` varchar(255),
   `weight` varchar(255),
   `height` varchar(255),
@@ -19,7 +20,7 @@ CREATE TABLE `patients` (
 );
 
 CREATE TABLE `doctors` (
-  `doctorId` integer AUTO_INCREMENT PRIMARY KEY
+  `doctorId` integer PRIMARY KEY
 );
 
 CREATE TABLE `submissions` (
@@ -29,13 +30,12 @@ CREATE TABLE `submissions` (
   `doctorId` integer NULL,
   `patientId` integer,
   `created_at` DATE,
-  `status` varchar(255)
+  `status` varchar(255),
+  `prescriptions` varchar(255)
 );
 
 ALTER TABLE `patients` ADD FOREIGN KEY (`patientid`) REFERENCES `users` (`id`);
 
 ALTER TABLE `doctors` ADD FOREIGN KEY (`doctorId`) REFERENCES `users` (`id`);
-
--- ALTER TABLE `submissions` ADD FOREIGN KEY (`doctorId`) REFERENCES `doctors` (`doctorId`);
 
 ALTER TABLE `submissions` ADD FOREIGN KEY (`patientId`) REFERENCES `patients` (`patientid`);

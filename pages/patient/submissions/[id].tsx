@@ -25,7 +25,7 @@ export const PatientSubmissionPage:NextPage<Props> = ({submission, patient}) => 
         <div className="flex px-3 pt-3 pb-5 w-full border-b-2 border-zinc-100">
           <div className="flex flex-col">
             <p className='text-lg font-medium pr-3 capitalize'>{ submission.title }</p>
-            <p className='text-sm text-zinc-500 capitalize'>{ `${ submission.doctorName } • ${ submission.created_at.substring(0, submission.created_at.indexOf('T')) }` }</p>
+            <p className='text-sm text-zinc-500 capitalize'>{ submission.doctorId ? (`${ submission.doctorName } • ${ submission.created_at.substring(0, submission.created_at.indexOf('T')) }`) : (`${ submission.created_at.substring(0, submission.created_at.indexOf('T')) }`)  }</p>
           </div>
           <div className='mt-0.5'>
             {
@@ -73,7 +73,7 @@ export const PatientSubmissionPage:NextPage<Props> = ({submission, patient}) => 
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="gray" className="bi bi-paperclip" viewBox="0 0 16 16">
                       <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
                     </svg>
-                    <p className='px-1 text-black text-sm'>nnnnnnnnnn.txt{ submission.prescriptions?.substring(submission.prescriptions!.lastIndexOf('/')+1) }</p>
+                    <p className='px-1 text-black text-sm'>{ submission.prescriptions?.substring(submission.prescriptions!.lastIndexOf('/')+1) }</p>
                     <div className="flex flex-1 justify-end">
                       <button className="text-blue-600 text-sm font-medium cursor-pointer">Download</button>
                     </div>
@@ -102,10 +102,11 @@ export const PatientSubmissionPage:NextPage<Props> = ({submission, patient}) => 
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const { id } = ctx.params as {id: string};
+
   // console.log('*Id: ' + id);
-  // const submissionId:number = Number(id);
+  const submissionId:number = Number(id);
   //1. get submission info
-  const response = await submissionApi.get<ISubmission>(`/submissions/${id}`, { headers: { 'Content-Type': 'application/json' } });
+  const response = await submissionApi.get<ISubmission>(`/submissions`, {data: submissionId , headers: { 'Content-Type': 'application/json' } });
   const submissionInfo:ISubmission = response.data;
   // console.log({ submissionInfo })
   

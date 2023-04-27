@@ -35,3 +35,5 @@ export const getPatientInfo = async(req: NextApiRequest, res: NextApiResponse<Da
     return res.status(200).json( patient );
 
 }
+
+

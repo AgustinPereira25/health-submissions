@@ -1,5 +1,6 @@
 import { getToken } from 'next-auth/jwt';
 import { NextResponse, type NextRequest } from 'next/server'
+import { dbPatient } from './database';
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(req: NextRequest) {
@@ -26,7 +27,14 @@ export async function middleware(req: NextRequest) {
 
   if ( req.nextUrl.pathname.startsWith('/doctor') || req.nextUrl.pathname === '/'){
     if( session.user.role !== 'doctor' ) {
-      NextResponse.redirect( new URL('/patient', req.url))
+      return NextResponse.redirect( new URL('/patient', req.url))
+    }
+  }
+
+  //Control that patient's data it's inserted.
+  if ( session.user.role === 'patient' ){
+    if ( req.nextUrl.pathname.startsWith('/patient/submissions/new') && ( session.user.phone === '' || session.user.weight === '' || session.user.height === '' || session.user.otherInfo === '' ) ){
+      return NextResponse.redirect( new URL('/patient/information', req.url));
     }
   }
 

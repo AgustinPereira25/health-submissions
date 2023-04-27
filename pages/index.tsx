@@ -3,8 +3,8 @@ export const Main = () => {
 
   /*
     Test data:
-     doctor: id:1 email: "izabella83@hotmail.com"
-     patient: id: 7, email: Beaulah.Mraz@hotmail.com
+     patient: id:9 email: "Robert81@gmail.com"
+     doctor: id: 27, email: Casandra9@gmail.com
 
      password: 1234
   */
