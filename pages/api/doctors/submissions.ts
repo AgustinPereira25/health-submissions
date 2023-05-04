@@ -26,15 +26,23 @@ export const getDoctorSubmissions = async(req: NextApiRequest, res: NextApiRespo
     let arrSqlUser:(string | number | undefined)[] = [];
     if (status !== '')
     {
-        arrSqlUser = [doctorIdQry, status];
+        arrSqlUser = [status];
         
     }
     else
     {
         arrSqlUser = [doctorIdQry];
     }
+    var query:string = '';
+    if( status !== '' ){
+        query = `SELECT s.*, u.name as patientName FROM submissions s INNER JOIN users u ON s.patientId = u.id and s.status = ? ;`
+    }
+    else
+    {
+        query = `SELECT s.*, u.name as patientName FROM submissions s INNER JOIN users u ON s.patientId = u.id and s.doctorId = ? and s.status <> 'Pending' ;`
+    }
     const result:any = await executeQuery({
-        query: `SELECT s.*, u.name as patientName FROM submissions s INNER JOIN users u ON s.patientId = u.id and s.doctorId = ? ${ status === 'Pending' ? (' and s.status=?;') : (` and s.status <> 'Pending';`) }`,
+        query: query,
         values: arrSqlUser,
     });
     // console.log({ result })

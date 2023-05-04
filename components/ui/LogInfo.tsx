@@ -4,7 +4,7 @@ import React, { useContext } from 'react'
 export const LogInfo = () => {
 
   const { user, logout } = useContext(AuthContext);
-  console.log({ user });
+  // console.log({ user });
   return (
     // <div className='flex h-full items-center'>
     <div className='flex items-center'>

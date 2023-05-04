@@ -20,33 +20,62 @@ export const SubmissionInfoPage:NextPage<Props> = ({submission, patient}) => {
   //el UseRef no re-renderiza si hay algun cambio
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filePreview = submission.prescriptions; //toDo: show only the name of file.
-  const [fileAndSubmState, setFileAndSubmState] = useState({ file: filePreview , state: submission.status });
-  // const [filePreview, setFilePreview] = useState<string | undefined>(submission.prescriptions);
+  const [file, setFile] = useState<File | undefined>(undefined);
+  const [filePreview, setFilePreview] = useState<string | undefined>(submission.prescriptions);
+  const [showError, setShowError] = useState(file ? false : true);
+  const [previewSubmission, setPreviewSubmission] = useState(submission);
 
-  const [showError, setShowError] = useState(fileAndSubmState.file ? false : true);
+  const handleClick = async() => {
 
-  const onClickChange = () => {
-    switch(fileAndSubmState.state){
+    switch(previewSubmission.status){
+
       case 'Pending':
-        setFileAndSubmState({ file:fileAndSubmState.file, state:'In progress' });
         //update state in db field
-
+        submissionApi.put('/submissions',{ id: previewSubmission.submissionId, status: previewSubmission.status, file: '' });
+        setPreviewSubmission(previewSubmission => ({
+          ...previewSubmission,
+          status: 'In progress'
+        }));
         break;
 
       case 'In progress':
-        if (!fileAndSubmState.file){
+        if (!file){
           return setShowError(true);
         }
-        //update db field
+        //Upload File, returns URL
+        try {
+          var formData = new FormData();
+          formData.append("file", file);
+    
+          const res = await fetch("/api/doctors/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-        break;
+          const data:{message:string} = await res.json();
+    
+          // console.log("File was uploaded successfully:", data.message);
+          
+          //Update db field
+          submissionApi.put('/submissions',{ id: previewSubmission.submissionId, status: previewSubmission.status, file: data.message });
+
+          setPreviewSubmission(previewSubmission => ({
+            ...previewSubmission,
+            status: 'Done'
+          }));
+          break;
+
+        } catch (error) {
+          console.error(error);
+          alert("Sorry! something went wrong.");
+        }
     }
     
   }
 
-  const onFileSelected = ({ target }: ChangeEvent<HTMLInputElement>) => {
-    
+  const onFileSelected = async({ target }: ChangeEvent<HTMLInputElement>) => {
+    //TODO: Llamar al Upload() en el  onClick() del button de la submission, aquí guardar la info del file en un state.
+    // (así logramos que no sobrecargue el storage si el usuario sube 20 archivos, solo se sube el último al cliquear el boton finish submission.)
     if ( !target.files || target.files.length === 0 ){
       setShowError(true);
       return;
@@ -60,43 +89,9 @@ export const SubmissionInfoPage:NextPage<Props> = ({submission, patient}) => {
     //   return;
     // }
 
-      // console.log({file})
-      // const { data } = await submissionApi.post<{ message:string }>('/admin/upload', formData);
-
-    setFileAndSubmState({ file: file.name, state: fileAndSubmState.state });
+    setFile(file);
+    setFilePreview(file.name);
     setShowError(false);
-
-    //TODO:
-    // try {
-    //   var formData = new FormData();
-    //   formData.append("file", file);
-
-    //   // const { data } = await submissionApi.post<{ message:string }>('/admin/upload', formData);
-    //   const res = await fetch("/api/upload", {
-    //     method: "POST",
-    //     body: formData,
-    //   });
-
-    //   const {
-    //     data,
-    //     error,
-    //   }: {
-    //     data: {
-    //       url: string | string[];
-    //     } | null;
-    //     error: string | null;
-    //   } = await res.json();
-
-    //   if (error || !data) {
-    //     alert(error || "Sorry! something went wrong.");
-    //     return;
-    //   }
-
-    //   console.log("File was uploaded successfylly:", data);
-    // } catch (error) {
-    //   console.error(error);
-    //   alert("Sorry! something went wrong.");
-    // }
   }
 
   return (
@@ -108,19 +103,19 @@ export const SubmissionInfoPage:NextPage<Props> = ({submission, patient}) => {
         <div className="flex px-3 pt-3 pb-5 w-full border-b-2 border-zinc-100">
           <div className="flex flex-col">
             <div className="flex items-center">
-              <p className='text-lg font-medium pr-3 capitalize'>{ submission.title }</p>
+              <p className='text-lg font-medium pr-3 capitalize'>{ previewSubmission.title }</p>
               <div className='mt-0.5'>
                 {
-                  submission.status === 'Pending' ? <p className="px-3 py-0.5 font-normal text-blue-800 rounded-full bg-blue-100">Pending</p> 
-                          : submission.status === 'In progress' ? <p className="px-3 py-0.5 font-normal text-green-800 rounded-full bg-green-200">In progress</p>
+                  previewSubmission.status === 'Pending' ? <p className="px-3 py-0.5 font-normal text-blue-800 rounded-full bg-blue-100">Pending</p> 
+                          : previewSubmission.status === 'In progress' ? <p className="px-3 py-0.5 font-normal text-green-800 rounded-full bg-green-200">In progress</p>
                           : <p className="px-3 py-0.5 font-normal rounded-full bg-zinc-200">Done</p>
                 }
               </div>              
             </div>
-            <p className='text-sm text-zinc-500 capitalize'>{ `${ patient.name } • ${ submission.created_at.substring(0, submission.created_at.indexOf('T')) }` }</p>
+            <p className='text-sm text-zinc-500 capitalize'>{ `${ patient.name } • ${ previewSubmission.created_at.substring(0, previewSubmission.created_at.indexOf('T')) }` }</p>
           </div>
 
-          <SubmissionButton submission={submission}/>
+          <SubmissionButton submission={previewSubmission} handleClick={handleClick} />
         </div>
 
         <div className='flex px-3 pt-3 gap-80'>
@@ -144,7 +139,7 @@ export const SubmissionInfoPage:NextPage<Props> = ({submission, patient}) => {
         <div className='flex px-3 pt-3 flex-1'>
           <div className='flex flex-col'>
             <p className="text-zinc-500 text-sm font-medium">Symptoms</p>
-            <p className='text-sm'>{submission.symptoms}</p>
+            <p className='text-sm'>{previewSubmission.symptoms}</p>
           </div>
         </div>
 
@@ -154,30 +149,28 @@ export const SubmissionInfoPage:NextPage<Props> = ({submission, patient}) => {
           </div>
         </div>
         <div className='flex items-center flex-1'>
-          {/* ToDo: Utilizar useState para sincronizar los datos entre el futuro childcomponent(FileSelection) y este (parent), crear state {state: xxx, file:xxx}, props: in:submission in: onFileChange*/}
               {
-                submission.status === 'Done'
+                previewSubmission.status === 'Done'
                 ? 
                 (
                   <div className='flex flex-1 mt-1 px-2 py-2 rounded-md border-x-2 border-y-2 border-zinc-200'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="gray" className="bi bi-paperclip" viewBox="0 0 16 16">
                       <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V5a.5.5 0 0 1 1 0v7a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0V3z"/>
                     </svg>
-                    <p className='px-1 text-black text-sm'>{ submission.prescriptions!.substring(submission.prescriptions!.lastIndexOf('/')+1) }</p>
+                    <p className='px-1 text-black text-sm'>{ filePreview!.substring(filePreview!.lastIndexOf('/')+1) }</p>
                     <div className="flex flex-1 justify-end">
                       <p className="text-blue-600 text-sm font-medium">Download</p>
                     </div>
                   </div>
                 )
                 :
-                submission.status === 'Pending'
+                previewSubmission.status === 'Pending'
                 ?
                 (
                   <div className='flex flex-col  text-md font-medium grow'>
                     <div className='flex items-center px-3 pb-4'>
                       <button 
                         className="px-3 py-1 bg-gray-100 text-md text-gray-300 font-medium rounded-sm mt-1 cursor-default"
-                        // onClick={ () => fileInputRef.current?.click() }
                       >
                         Choose file
                       </button>
@@ -211,8 +204,7 @@ export const SubmissionInfoPage:NextPage<Props> = ({submission, patient}) => {
                           style={{ display:'none' }}
                           onChange={ onFileSelected }
                       />
-                      {/* <p className={submission.prescriptions === undefined ? 'px-2 text-gray-400 font-normal' : 'px-2 text-black' }>{ submission.prescriptions === undefined ? ('No file chosen') : (submission.prescriptions.substring(submission.prescriptions?.lastIndexOf('/')+1))}</p> */}
-                      <p className={fileAndSubmState.file === undefined ? 'px-2 text-gray-400 font-normal' : 'px-2 text-black' }>{ fileAndSubmState.file === undefined ? ('No file chosen') : fileAndSubmState.file.substring(fileAndSubmState.file.lastIndexOf('/')+1) }</p>
+                      <p className={filePreview === undefined ? 'px-2 text-gray-400 font-normal' : 'px-2 text-black' }>{ filePreview === undefined ? ('No file chosen') : filePreview.substring(filePreview.lastIndexOf('/')+1) }</p>
                     </div>
                     <Chip 
                       label="Must upload a prescription in order to finish the submission"

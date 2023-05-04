@@ -88,7 +88,7 @@ const HistorySubmissions: NextPage<Props> = ({ submissions }) => {
                 
 
   return (
-    <Layout title='Home'>
+    <Layout title='Task History'>
         <div className="py-5 w-full h-screen">
             <DataGrid 
                 sx={{

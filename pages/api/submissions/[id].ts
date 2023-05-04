@@ -30,7 +30,7 @@ export const getSubmissionInfo = async(req: NextApiRequest, res: NextApiResponse
     // console.log({ submissionIdQry });
     const arrSqlSub = [submissionIdQry];
     const result:any = await executeQuery({
-        query: `SELECT s.*, u.name as doctorName FROM submissions s INNER JOIN users u ON u.id = s.doctorId AND s.submissionId = ?; `,
+        query: `SELECT s.*, u.name as doctorName FROM submissions s LEFT JOIN users u ON u.id = s.doctorId WHERE s.submissionId = ?; `,
         values: arrSqlSub,
     });
     // console.log({ result })

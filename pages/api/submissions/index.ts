@@ -31,7 +31,7 @@ export const getSubmissionInfo = async(req: NextApiRequest, res: NextApiResponse
 
     const arrSqlSub = [submissionId];
     const result:any = await executeQuery({
-        query: `SELECT s.*, u.name as doctorName FROM submissions s INNER JOIN users u ON u.id = s.doctorId AND s.submissionId = ?; `,
+        query: `SELECT s.*, u.name as doctorName FROM submissions s left join users u ON u.id = s.doctorId where s.submissionId = ?;`,
         values: arrSqlSub,
     });
     // console.log({ result })
@@ -44,7 +44,7 @@ export const getSubmissionInfo = async(req: NextApiRequest, res: NextApiResponse
 
 export const updateSubmission = async(req: NextApiRequest, res: NextApiResponse<Data>) => {
     const { id, status = '', file = '' } = req.body;
-    // console.log( { doctorId } );
+    
     const submissionIdQry:number = Number(id);
     
     var dbStatus = ''
@@ -68,13 +68,13 @@ export const updateSubmission = async(req: NextApiRequest, res: NextApiResponse<
 
     let arrSqlSub = dbStatus ? dbFile ? [dbStatus,dbFile,submissionIdQry] : [dbStatus,submissionIdQry] : [dbFile,submissionIdQry];
     const result:any = await executeQuery({
-        query: `UPDATE submissions set ${ dbStatus ? dbFile ? `status = ?, prescriptions = ?` : `status = ?`  : `prescriptions = ?` } WHERE s.submissionId = ?; `,
+        query: `UPDATE submissions set ${ dbStatus ? dbFile ? `status = ?, prescriptions = ?` : `status = ?`  : `prescriptions = ?` } WHERE submissionId = ?; `,
         values: arrSqlSub,
     });
 
-    var submissions:ISubmission = result[0];
-    // console.log({doctorSubmissions});
-    return res.status(200).json( submissions );
+    // var submissions:ISubmission = result[0];
+    // console.log({result});
+    return res.status(200).json( { message: 'Ok' } );
 }
 
 
